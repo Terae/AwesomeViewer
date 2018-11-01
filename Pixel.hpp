@@ -10,6 +10,7 @@
 
 namespace AwesomeViewer {
     enum PixelType {
+        // bits order: 'bottom | top |left | right'
         EmptyBorder           = 0b00000, //
         HorizontalLeftBorder  = 0b00010, // ─
         HorizontalRightBorder = 0b00001, // ─
@@ -21,10 +22,10 @@ namespace AwesomeViewer {
         TopRightCorner        = 0b00101, // ┐
         BottomLeftCorner      = 0b01010, // └
         BottomRightCorner     = 0b01001, // ┘
-        HorizontalTopT        = 0b00111, // ┴
-        HorizontalBottomT     = 0b01011, // ┬
-        VerticalRightT        = 0b01101, // ├
-        VerticalLeftT         = 0b01110, // ┤
+        HorizontalTopT        = 0b00111, // ┬
+        HorizontalBottomT     = 0b01011, // ┴
+        VerticalRightT        = 0b01101, // ┤
+        VerticalLeftT         = 0b01110, // ├
         Cross                 = 0b01111, // ┼
         CellName              = 0b010000, // begin of the cell name
         CellValue             = 0b100000, // begin of a cell line
@@ -35,7 +36,7 @@ namespace AwesomeViewer {
             return p1;
         if (p2 == CellValue || p2 == CellName || p2 == EmptyBorder)
             return p2;
-        return static_cast<PixelType>(p1 & p2);
+        return static_cast<PixelType>(p1 | p2);
     }
 
     std::string get_symbol_of(PixelType type) {
@@ -63,13 +64,13 @@ namespace AwesomeViewer {
             case BottomRightCorner:
                 return "┘";
             case HorizontalTopT:
-                return "┴";
-            case HorizontalBottomT:
                 return "┬";
+            case HorizontalBottomT:
+                return "┴";
             case VerticalRightT:
-                return "├";
-            case VerticalLeftT:
                 return "┤";
+            case VerticalLeftT:
+                return "├";
             case Cross:
                 return "┼";
             case CellName:
@@ -85,6 +86,12 @@ namespace AwesomeViewer {
 
     public:
         virtual std::string to_string() const = 0;
+
+        PixelType get_type() const { return _type; }
+
+        bool can_be_overwritten() const {
+            return _type != EmptyBorder && _type != CellValue && _type != CellName;
+        }
     };
 
     class EmptyPixel : public AbstractPixel {
