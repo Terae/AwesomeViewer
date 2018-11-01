@@ -79,7 +79,6 @@ namespace AwesomeViewer {
     std::string clear_lines(unsigned n = 1) {
         return "\e[0m" + clear_before_cursor() + ((n) ? repeat(n, clear_line() + move_up()) : std::string(""));
     }
-
 }
 
 #endif //AWESOME_VIEWER_UTILS_HPP

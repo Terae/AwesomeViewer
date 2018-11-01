@@ -11,24 +11,24 @@
 namespace AwesomeViewer {
     enum PixelType {
         // bits order: 'bottom | top |left | right'
-        EmptyBorder           = 0b00000, //
-        HorizontalLeftBorder  = 0b00010, // ─
+        EmptyBorder = 0b00000, //
+        HorizontalLeftBorder = 0b00010, // ─
         HorizontalRightBorder = 0b00001, // ─
-        HorizontalBorder      = 0b00011, // ─
-        VerticalTopBorder     = 0b00100, // │
-        VerticalBottomBorder  = 0b01000, // │
-        VerticalBorder        = 0b01100, // │
-        TopLeftCorner         = 0b00110, // ┌
-        TopRightCorner        = 0b00101, // ┐
-        BottomLeftCorner      = 0b01010, // └
-        BottomRightCorner     = 0b01001, // ┘
-        HorizontalTopT        = 0b00111, // ┬
-        HorizontalBottomT     = 0b01011, // ┴
-        VerticalRightT        = 0b01101, // ┤
-        VerticalLeftT         = 0b01110, // ├
-        Cross                 = 0b01111, // ┼
-        CellName              = 0b010000, // begin of the cell name
-        CellValue             = 0b100000, // begin of a cell line
+        HorizontalBorder = 0b00011, // ─
+        VerticalTopBorder = 0b00100, // │
+        VerticalBottomBorder = 0b01000, // │
+        VerticalBorder = 0b01100, // │
+        TopLeftCorner = 0b00110, // ┌
+        TopRightCorner = 0b00101, // ┐
+        BottomLeftCorner = 0b01010, // └
+        BottomRightCorner = 0b01001, // ┘
+        HorizontalTopT = 0b00111, // ┬
+        HorizontalBottomT = 0b01011, // ┴
+        VerticalRightT = 0b01101, // ┤
+        VerticalLeftT = 0b01110, // ├
+        Cross = 0b01111, // ┼
+        CellName = 0b010000, // begin of the cell name
+        CellValue = 0b100000, // begin of a cell line
     };
 
     PixelType operator+(const PixelType &p1, const PixelType &p2) {

@@ -133,7 +133,7 @@ namespace AwesomeViewer {
 
 
     bool has(Font x, Font y) {
-        return (bool)(((int) x) & ((int) y));
+        return (bool) (((int) x) & ((int) y));
     }
 
     struct Style {
@@ -224,7 +224,6 @@ namespace AwesomeViewer {
             (keepFont and !reset) ? Font::Inherit : (Font) ((r & ((l & r) ^ r)) | reset)
         };
     }
-
 }
 
 #endif //AWESOME_VIEWER_STYLE_H

@@ -31,6 +31,7 @@ namespace AwesomeViewer {
         unsigned int get_height() const {
             return _height;
         }
+
         unsigned int get_width() const {
             return _width;
         }
@@ -50,9 +51,13 @@ namespace AwesomeViewer {
         std::function<std::string()> _data_generator;
 
       public:
-        StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(width,
-                    height), _data_generator(std::move(generator)) {}
-        StringCell(unsigned int width, unsigned int height, const std::string &str) : StringCell(width, height, [str]() {
+        StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(
+                width,
+                height), _data_generator(std::move(generator)) {}
+
+        StringCell(unsigned int width, unsigned int height, const std::string &str) :
+            StringCell(width, height,
+                       [str]() {
             return str;
         }) {}
 
@@ -82,22 +87,38 @@ namespace AwesomeViewer {
     };
 
     class ProgressCell : public AbstractCell {
+        double _min;
+        double _max;
         std::function<double()> _percent_generator;
         bool _print_percent;
 
       public:
-        ProgressCell(unsigned int width, unsigned int height, std::function<double()> percent_generator,
+        ProgressCell(unsigned int width, unsigned int height, double min, double max,
+                     std::function<double()> percent_generator,
                      bool print_percent = true)
-            : AbstractCell(width, height), _percent_generator(std::move(percent_generator)) {
+            : AbstractCell(width, height), _min(min), _max(max), _percent_generator(std::move(percent_generator)) {
             _print_percent = print_percent && _width > 7;
+            if (_max < _min) {
+                double tmp = _min;
+                _min = _max;
+                _max = tmp;
+            }
         }
+
+        ProgressCell(unsigned int width, unsigned int height, std::function<double()> percent_generator,
+                     bool print_percent = true) : ProgressCell(width, height, 0.0, 100.0, std::move(percent_generator),
+                                 print_percent) {}
 
         void update() override {
             _data.clear();
             double progress = _percent_generator();
-            progress = std::min(100.0, std::max(0.0, progress));
+            progress = std::min(_max, std::max(_min, progress));
+            if (_min < 0) {
+                progress -= _min;
+            }
+            progress *= 100.0 / (_max - _min);
             unsigned int progress_width = (_print_percent ? _width - 4 : _width);
-            auto amount = static_cast<unsigned int>(progress * progress_width / 100);
+            auto amount = (_min == _max ? progress_width : static_cast<unsigned int>(progress * progress_width / 100));
 
             Style style = Style::Default();
             style.bg = Color::Green;
@@ -115,7 +136,7 @@ namespace AwesomeViewer {
         }
     };
 
-    template <typename T>
+    template<typename T>
     class MapCell : public AbstractCell {
         std::function<std::map<std::string, T>()> _data_generator;
 
@@ -123,7 +144,10 @@ namespace AwesomeViewer {
         MapCell(unsigned int width, unsigned int height,
                 std::function<std::map<std::string, T>()> generator) : AbstractCell(width, height),
             _data_generator(std::move(generator)) {}
-        MapCell(unsigned int width, unsigned int height, std::map<std::string, T> map) : MapCell(width, height, [map]() {
+
+        MapCell(unsigned int width, unsigned int height, std::map<std::string, T> map) :
+            MapCell(width, height,
+                    [map]() {
             return map;
         }) {}
 
@@ -175,8 +199,6 @@ namespace AwesomeViewer {
             }
         }
     };
-
 }
-
 
 #endif //UNTITLED_CELL_H

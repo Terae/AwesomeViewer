@@ -26,6 +26,7 @@ namespace AwesomeViewer {
         std::vector<std::vector<std::unique_ptr<AbstractPixel>>> _pixels;
 
         const std::string _HIDE = "\e[0;8m";
+
         struct Coord {
             unsigned int x, y;
 
@@ -37,6 +38,7 @@ namespace AwesomeViewer {
                 return os << '[' << c.x << ',' << c.y << ']';
             }
         };
+
         const Coord out_of_space = {std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()};
 
         Coord get_free_space(const AbstractCell &cell) const {
@@ -109,7 +111,7 @@ namespace AwesomeViewer {
             insert_border({x++, y}, HorizontalBorder);
             insert_border({x++, y}, EmptyBorder);
 
-            std::string s = name.substr(0, (std::size_t)std::max(static_cast<int>(cell.get_width()) - 2, 0));
+            std::string s = name.substr(0, (std::size_t) std::max(static_cast<int>(cell.get_width()) - 2, 0));
             _pixels[y][x++] = std::make_unique<CellNamePixel>(s);
             for (unsigned int i = 0; i < s.size() - 1; ++i) {
                 _pixels[y][x++] = std::make_unique<EmptyPixel>();
@@ -184,8 +186,6 @@ namespace AwesomeViewer {
             }
         }
     };
-
 }
-
 
 #endif //AWESOME_VIEWER_VIRTUALTERMINAL_H
