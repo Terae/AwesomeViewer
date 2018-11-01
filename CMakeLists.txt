@@ -8,7 +8,8 @@ set(VIEWER_SOURCE
         src/Pixel.hpp
         src/Cell.hpp
         src/VirtualTerminal.hpp
-        src/Style.hpp)
+        src/Style.hpp
+        src/StyleString.hpp)
 add_library(AwesomeViewer STATIC ${VIEWER_SOURCE})
 set_target_properties(AwesomeViewer PROPERTIES LINKER_LANGUAGE CXX)
 

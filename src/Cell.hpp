@@ -14,13 +14,14 @@
 #include <vector>
 
 #include "Style.hpp"
+#include "StyleString.hpp"
 
 namespace AwesomeViewer {
 
     class AbstractCell {
       protected:
         unsigned int _width, _height;
-        std::vector<std::string> _data;
+        std::vector<StyleString> _data;
 
         AbstractCell(unsigned int width, unsigned int height) :
             _width(width), _height(height) {}
@@ -43,19 +44,32 @@ namespace AwesomeViewer {
             if (_height < line) {
                 throw std::range_error("Line out of range.");
             }
-            return _data[line];
+            return _data[line].to_string();
         }
     };
 
     class StringCell : public AbstractCell {
-        std::function<std::string()> _data_generator;
+        std::function<StyleString()> _data_generator;
 
       public:
-        StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(
+        StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : StringCell(
+                width,
+                height,
+                [generator]() {
+            return StyleString(Style::Default(), generator());
+        }
+        ) {}
+
+        StringCell(unsigned int width, unsigned int height, std::function<StyleString()> generator) : AbstractCell(
                 width,
                 height), _data_generator(std::move(generator)) {}
 
         StringCell(unsigned int width, unsigned int height, const std::string &str) :
+            StringCell(width, height, {
+            Style::Default(), str
+        }) {}
+
+        StringCell(unsigned int width, unsigned int height, const StyleString &str) :
             StringCell(width, height,
                        [str]() {
             return str;
@@ -63,19 +77,19 @@ namespace AwesomeViewer {
 
         void update() override {
             _data.clear();
-            std::string str = _data_generator();
+            StyleString str = _data_generator();
             for (unsigned int i = 0; i < _height; ++i) {
                 if (str.empty()) {
-                    _data.emplace_back(_width, ' ');
+                    _data.emplace_back(Style::Default(), std::string(_width, ' '));
                 } else {
                     std::size_t eol = str.find_first_of('\n');
-                    std::string tmp = str.substr(0, std::min(eol, static_cast<std::size_t>(_width)));
+                    StyleString tmp = str.substr(0, std::min(eol, static_cast<std::size_t>(_width)));
                     if (tmp.size() < _width) {
                         tmp += std::string(_width - tmp.size(), ' ');
                     }
 
                     if (eol == std::string::npos) {
-                        str = "";
+                        str.clear();
                     } else {
                         str = str.substr(eol + 1);
                     }
@@ -120,19 +134,18 @@ namespace AwesomeViewer {
             unsigned int progress_width = (_print_percent ? _width - 4 : _width);
             auto amount = (_min == _max ? progress_width : static_cast<unsigned int>(progress * progress_width / 100));
 
-            Style style = Style::Default();
-            style.bg = Color::Green;
-            std::stringstream result;
-            result << style.to_string() << std::string(amount, ' ');
-            style.bg = Color::Transparent;
-            result << style.to_string() << std::string(progress_width - amount, ' ');
+            StyleString result;
+            result.insert(Style(Color::Green), std::string(amount, ' '));
+
+            result.insert(Style::Default(), std::string(progress_width - amount, ' '));
 
             if (_print_percent) {
-                style.fg = FontColor::Black;
-                style.font = Font::Bold;
-                result << style.to_string() << std::right << std::setw(3) << static_cast<int>(progress) << '%';
+                std::stringstream ss;
+                ss << std::right << std::setw(3) << static_cast<int>(progress) << '%';
+
+                result.insert(Style(FontColor::Black, Font::Bold), ss.str());
             }
-            _data.push_back(result.str());
+            _data.push_back(result);
         }
     };
 
@@ -170,32 +183,23 @@ namespace AwesomeViewer {
 
             it = generated_map.begin();
             for (unsigned int i = 0; i < _height; ++i) {
-                std::string result;
-                Style style = Style::Default();
+                StyleString result;
 
                 if (it == generated_map.cend()) {
-                    result = std::string(max_size + 1, ' ') + "-" + std::string(_width - max_size - 2, ' ');
-
-                    style.fg = FontColor::Black;
-                    style.font = Font::Bold;
-                    result.insert(0, style.to_string());
+                    std::string str = std::string(max_size + 1, ' ') + "-" + std::string(_width - max_size - 2, ' ');
+                    result.insert(Style(FontColor::Black, Font::Bold), str);
                 } else {
-                    std::stringstream ss;
-                    ss << std::right << std::setw(max_size) << it->first << " : " << std::left << std::setw(
-                           _width - 3 - max_size) << it->second;
-                    result = ss.str().substr(0, _width);
+                    std::stringstream ss_left;
+                    ss_left << std::right << std::setw(max_size) << it->first << " : ";
+                    result.insert(Style(FontColor::Black, Font::Bold), ss_left.str());
 
-                    if (result.size() >= max_size + 2) {
-                        result.insert(max_size + 2, style.to_string());
-                    }
-
-                    style.fg = FontColor::Black;
-                    style.font = Font::Bold;
-                    result.insert(0, style.to_string());
+                    std::stringstream ss_right;
+                    ss_right << std::left << std::setw(_width - 3 - max_size) << it->second;
+                    result.insert(Style::Default(), ss_right.str());
 
                     ++it;
                 }
-                _data.push_back(result);
+                _data.push_back(result.substr(0, _width));
             }
         }
     };

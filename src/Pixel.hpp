@@ -113,7 +113,7 @@ namespace AwesomeViewer {
 
       public:
         explicit CellNamePixel(std::string name) : _name(std::move(name)) {
-            _style.fg = FontColor::Cyan;
+            _style = Style(FontColor::Cyan);
             _type = CellName;
         }
 
@@ -129,8 +129,6 @@ namespace AwesomeViewer {
       public:
         explicit CellValuePixel(std::function<std::string()> value) : _value(std::move(value)) {
             _type = CellValue;
-            _style.font = Font::Default;
-            _style.fg = FontColor::White;
         }
 
         std::string to_string() const override {
@@ -141,8 +139,7 @@ namespace AwesomeViewer {
     class BorderPixel : public AbstractPixel {
       public:
         explicit BorderPixel(PixelType type) {
-            _style.fg = FontColor::Black;
-            _style.font = Font::Bold;
+            _style = Style(FontColor::Black, Font::Bold);
             _type = type;
         }
 

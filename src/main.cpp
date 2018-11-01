@@ -9,9 +9,9 @@
 using namespace AwesomeViewer;
 
 int main() {
-    VirtualTerminal vt(54, 13);
+    VirtualTerminal vt(56, 13);
 
-    StringCell c1(20, 4, "Hello communicator!\nI'm an helper text\nAnd I am a very long string");
+    StringCell c1(22, 4, "Hello communicator!\nI'm an helper text\nAnd I am a very long string");
     vt.add_cell("Communicator", c1);
 
     MapCell<int> c2(30, 7, []() {
@@ -23,17 +23,18 @@ int main() {
     });
     vt.add_cell("ModuleManager", c2);
 
-    StringCell c3(12, 2, "Sarah\n  Connor");
+    std::vector<std::pair<Style, std::string>> v;
+    StringCell c3(12, 2, {{Style(Font::Italic), "Sarah\n"}, {Style::Default(), "  Connor"}});
     vt.add_cell("Terminator", c3);
 
     int timer = 0;
-    StringCell c4(5, 2, [&timer]() {
+    StringCell c4(7, 2, [&timer]() {
         std::string str_timer = std::to_string(timer / 2);
         return std::string(3 - str_timer.size(), ' ') + str_timer + " s";
     });
     vt.add_cell("Timer", c4);
 
-    StringCell c5(50, 1, "I need to print a very long string in this box.");
+    StringCell c5(50, 1, {{Style::Default(), "I need to print a "}, {Style(Font::Italic, Font::Bold, FontColor::Blue), "very long"}, {Style::Default(), " string in this box"}});
     vt.add_cell("Long container", c5);
 
     ProgressCell c6(23, 1, [&timer]() -> double {
