@@ -32,15 +32,17 @@ namespace AwesomeViewer {
     };
 
     PixelType operator+(const PixelType &p1, const PixelType &p2) {
-        if (p1 == CellValue || p1 == CellName || p1 == EmptyBorder)
+        if (p1 == CellValue || p1 == CellName || p1 == EmptyBorder) {
             return p1;
-        if (p2 == CellValue || p2 == CellName || p2 == EmptyBorder)
+        }
+        if (p2 == CellValue || p2 == CellName || p2 == EmptyBorder) {
             return p2;
+        }
         return static_cast<PixelType>(p1 | p2);
     }
 
     std::string get_symbol_of(PixelType type) {
-        switch(type) {
+        switch (type) {
             case EmptyBorder:
                 return " ";
             case HorizontalLeftBorder:
@@ -80,14 +82,16 @@ namespace AwesomeViewer {
     }
 
     class AbstractPixel {
-    protected:
+      protected:
         PixelType _type = EmptyBorder;
         Style _style = Style::Default();
 
-    public:
+      public:
         virtual std::string to_string() const = 0;
 
-        PixelType get_type() const { return _type; }
+        PixelType get_type() const {
+            return _type;
+        }
 
         bool can_be_overwritten() const {
             return _type != EmptyBorder && _type != CellValue && _type != CellName;
@@ -95,7 +99,7 @@ namespace AwesomeViewer {
     };
 
     class EmptyPixel : public AbstractPixel {
-    public:
+      public:
         EmptyPixel() = default;
 
         std::string to_string() const override {
@@ -104,10 +108,10 @@ namespace AwesomeViewer {
     };
 
     class CellNamePixel : public AbstractPixel {
-    private:
+      private:
         std::string _name;
 
-    public:
+      public:
         explicit CellNamePixel(std::string name) : _name(std::move(name)) {
             _style.fg = FontColor::Cyan;
             _type = CellName;
@@ -119,10 +123,10 @@ namespace AwesomeViewer {
     };
 
     class CellValuePixel : public AbstractPixel {
-    private:
+      private:
         std::function<std::string()> _value;
 
-    public:
+      public:
         explicit CellValuePixel(std::function<std::string()> value) : _value(std::move(value)) {
             _type = CellValue;
             _style.font = Font::Default;
@@ -135,14 +139,14 @@ namespace AwesomeViewer {
     };
 
     class BorderPixel : public AbstractPixel {
-    public:
+      public:
         explicit BorderPixel(PixelType type) {
             _style.fg = FontColor::Black;
             _style.font = Font::Bold;
             _type = type;
         }
 
-        void update_border_type(const PixelType& other) {
+        void update_border_type(const PixelType &other) {
             _type = (_type + other);
         }
 

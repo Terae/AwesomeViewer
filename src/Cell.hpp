@@ -18,14 +18,14 @@
 namespace AwesomeViewer {
 
     class AbstractCell {
-    protected:
+      protected:
         unsigned int _width, _height;
         std::vector<std::string> _data;
 
         AbstractCell(unsigned int width, unsigned int height) :
-        _width(width), _height(height) {}
+            _width(width), _height(height) {}
 
-    public:
+      public:
         virtual void update() = 0;
 
         unsigned int get_height() const {
@@ -36,10 +36,10 @@ namespace AwesomeViewer {
         }
 
         std::string get_nth_line(std::size_t line) const {
-            if(_data.empty()) {
+            if (_data.empty()) {
                 throw std::runtime_error("You need to update the cell.");
             }
-            if(_height < line) {
+            if (_height < line) {
                 throw std::range_error("Line out of range.");
             }
             return _data[line];
@@ -49,9 +49,11 @@ namespace AwesomeViewer {
     class StringCell : public AbstractCell {
         std::function<std::string()> _data_generator;
 
-    public:
+      public:
         StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(width, height), _data_generator(std::move(generator)) {}
-        StringCell(unsigned int width, unsigned int height, std::string str) : StringCell(width, height, [str](){ return str;}) {}
+        StringCell(unsigned int width, unsigned int height, std::string str) : StringCell(width, height, [str]() {
+            return str;
+        }) {}
 
         void update() override {
             _data.clear();
@@ -66,7 +68,7 @@ namespace AwesomeViewer {
                         tmp += std::string(_width - tmp.size(), ' ');
                     }
 
-                    if(eol == std::string::npos) {
+                    if (eol == std::string::npos) {
                         str = "";
                     } else {
                         str = str.substr(eol + 1);
@@ -82,9 +84,11 @@ namespace AwesomeViewer {
     class MapCell : public AbstractCell {
         std::function<std::map<std::string, T>()> _data_generator;
 
-    public:
+      public:
         MapCell(unsigned int width, unsigned int height, std::function<std::map<std::string, T>()> generator) : AbstractCell(width, height), _data_generator(std::move(generator)) {}
-        MapCell(unsigned int width, unsigned int height, std::map<std::string, T> map) : MapCell(width, height, [map](){ return map; }) {}
+        MapCell(unsigned int width, unsigned int height, std::map<std::string, T> map) : MapCell(width, height, [map]() {
+            return map;
+        }) {}
 
         void update() override {
             _data.clear();
@@ -93,22 +97,22 @@ namespace AwesomeViewer {
             unsigned int max_size = 0;
 
             auto it = generated_map.begin();
-            for(unsigned int i = 0; i < _height; i++, it++) {
-                if(it == generated_map.cend()) {
+            for (unsigned int i = 0; i < _height; i++, it++) {
+                if (it == generated_map.cend()) {
                     break;
                 }
 
-                if(it->first.size() > max_size) {
+                if (it->first.size() > max_size) {
                     max_size = it->first.size();
                 }
             }
 
             it = generated_map.begin();
-            for(unsigned int i = 0; i < _height; ++i) {
+            for (unsigned int i = 0; i < _height; ++i) {
                 std::string result;
                 Style style = Style::Default();
 
-                if(it == generated_map.cend()) {
+                if (it == generated_map.cend()) {
                     result = std::string(max_size + 1, ' ') + "-" + std::string(_width - max_size - 2, ' ');
 
                     style.fg = FontColor::Black;
@@ -119,7 +123,7 @@ namespace AwesomeViewer {
                     ss << std::right << std::setw(max_size) << it->first << " : " << std::left << std::setw(_width - 3 - max_size) << it->second;
                     result = ss.str().substr(0, _width);
 
-                    if(result.size() >= max_size + 2) {
+                    if (result.size() >= max_size + 2) {
                         result.insert(max_size + 2, style.to_string());
                     }
 

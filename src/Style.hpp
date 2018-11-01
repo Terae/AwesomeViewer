@@ -75,23 +75,41 @@ namespace AwesomeViewer {
         return r.empty() ? "" : "\e[" + r + "m";
     }
 
-    FontColor is_style(FontColor x) { return x; }
+    FontColor is_style(FontColor x) {
+        return x;
+    }
 
-    Color is_style(Color x) { return x; }
+    Color is_style(Color x) {
+        return x;
+    }
 
-    Font is_style(Font x) { return x; }
+    Font is_style(Font x) {
+        return x;
+    }
 
-    FontColor to_font_color(FontColor c) { return c; }
+    FontColor to_font_color(FontColor c) {
+        return c;
+    }
 
-    Color to_color(Color c) { return c; }
+    Color to_color(Color c) {
+        return c;
+    }
 
-    Font to_font(Font f) { return f; }
+    Font to_font(Font f) {
+        return f;
+    }
 
-    FontColor to_font_color(...) { return FontColor::None; }
+    FontColor to_font_color(...) {
+        return FontColor::None;
+    }
 
-    Color to_color(...) { return Color::None; }
+    Color to_color(...) {
+        return Color::None;
+    }
 
-    Font to_font(...) { return Font::None; }
+    Font to_font(...) {
+        return Font::None;
+    }
 
     template<class...Xs>
     constexpr FontColor get_font_color(Xs...xs) {
@@ -125,13 +143,17 @@ namespace AwesomeViewer {
 
         template<class...Styles>
         constexpr Style(
-                Styles...styles)
-                : bg{get_color(is_style(styles)...)}, fg{get_font_color(is_style(styles)...)},
-                  font{get_font_style(is_style(styles)...)} {}
+            Styles...styles)
+            : bg{get_color(is_style(styles)...)}, fg{get_font_color(is_style(styles)...)},
+              font{get_font_style(is_style(styles)...)} {}
 
-        constexpr static Style None() { return {}; }
+        constexpr static Style None() {
+            return {};
+        }
 
-        constexpr static Style Default() { return {Font::Default}; }
+        constexpr static Style Default() {
+            return {Font::Default};
+        }
 
         string default_mod() const {
             return has(font, Font::Default) ? "0" : "";
@@ -173,16 +195,16 @@ namespace AwesomeViewer {
 
         std::string to_string() const {
             return compute_mod(
-                    default_mod(),
-                    bold_mod(),
-                    underline_mod(),
-                    faint_mod(),
-                    italic_mod(),
-                    hidden_mod(),
-                    crossed_mod(),
-                    bg_mod(),
-                    fg_mod()
-            );
+                       default_mod(),
+                       bold_mod(),
+                       underline_mod(),
+                       faint_mod(),
+                       italic_mod(),
+                       hidden_mod(),
+                       crossed_mod(),
+                       bg_mod(),
+                       fg_mod()
+                   );
         }
     };
 
@@ -197,9 +219,9 @@ namespace AwesomeViewer {
         bool reset = static_cast<bool>(l & ~r);
 
         return Style{
-                (keepBG && !reset) ? Color::Inherit : b.bg,
-                (keepFG && !reset) ? FontColor::Inherit : b.fg,
-                (keepFont && !reset) ? Font::Inherit : (Font) ((r & ((l & r) ^ r)) | reset)
+            (keepBG and !reset) ? Color::Inherit : b.bg,
+            (keepFG and !reset) ? FontColor::Inherit : b.fg,
+            (keepFont and !reset) ? Font::Inherit : (Font) ((r & ((l & r) ^ r)) | reset)
         };
     }
 
