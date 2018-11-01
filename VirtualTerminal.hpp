@@ -5,8 +5,9 @@
 #ifndef AWESOME_VIEWER_VIRTUALTERMINAL_H
 #define AWESOME_VIEWER_VIRTUALTERMINAL_H
 
-#include "Cell.h"
+#include "Cell.hpp"
 #include "Pixel.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -20,20 +21,25 @@ namespace AwesomeViewer {
         unsigned int _width;
         unsigned int _height;
 
+        std::string _buffer;
+
         std::vector<std::vector<std::unique_ptr<AbstractPixel>>> _pixels;
 
+        const std::string _HIDE = "\e[0;8m";
         struct Coord {
             unsigned int x, y;
 
             friend bool operator==(const Coord& c1, const Coord& c2) {
                 return c1.x == c2.x && c1.y == c2.y;
             }
+
+            friend std::ostream& operator<<(std::ostream& os, const Coord& c) {
+                return os << '[' << c.x << ',' << c.y << ']';
+            }
         };
         const Coord out_of_space = {std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()};
 
-
         Coord get_free_space(const AbstractCell& cell) const {
-            // TODO
             bool found = false;
             Coord result{std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()};
             for(unsigned int y = 0; y < _height - cell.get_height() && !found; ++y) {
@@ -45,10 +51,9 @@ namespace AwesomeViewer {
 
                     if(interesting_cell) {
                         bool is_ok = true;
-                        for(unsigned int Y = y; Y < y + cell.get_height() && is_ok; ++Y) {
-                            for(unsigned int X = x; X < x + cell.get_width() && is_ok; ++X) {
+                        for(unsigned int Y = y; Y < y + cell.get_height() + 2 && is_ok; ++Y) {
+                            for(unsigned int X = x; X < x + cell.get_width() + 4 && is_ok; ++X) {
                                 if(_pixels[Y][X] != nullptr) {
-                                    auto p = _pixels[y][x]->get_type();
                                     if(!_pixels[Y][X]->can_be_overwritten()) {
                                         is_ok = false;
                                     }
@@ -73,7 +78,9 @@ namespace AwesomeViewer {
                     auto &pixel = dynamic_cast<BorderPixel &>(*_pixels[coords.y][coords.x]);
                     pixel.update_border_type(border);
                 } catch(std::bad_cast&) {
-                    throw std::runtime_error("The pixel isn't a border.");
+                    std::stringstream what;
+                    what << "The pixel " << coords << " isn't a border.";
+                    throw std::runtime_error(what.str());
                 }
             }
         }
@@ -145,19 +152,36 @@ namespace AwesomeViewer {
             insert_border({x, y}, BottomRightCorner);
         }
 
-        void print(std::ostream& os, std::chrono::duration<int64_t, std::milli> tempo = std::chrono::milliseconds(200)) const {
+        void print(std::ostream& os) {
+            std::string next;
+
+            // Calculation of the next string
             for (const auto& line : _pixels) {
                 for(const auto& pixel : line) {
                     if (pixel == nullptr) {
-                        os << ' ' << std::flush;
+                        next += ' ';
                     } else {
-                        os << pixel->to_string() << std::flush;
+                        next += pixel->to_string();
                     }
                 }
-                os << std::endl;
+                next += '\n';
             }
-            os << std::endl;
-            std::this_thread::sleep_for(tempo);
+
+            if(_buffer.empty()) {
+                _buffer = next;
+                os << _buffer << _HIDE << std::flush;
+            }
+
+            if(_buffer != next) {
+                _buffer = next;
+
+                // Necessary update: calculation of the transition
+                const unsigned int n = std::count(_buffer.cbegin(), _buffer.cend(), '\n');
+                next.insert(0, "\e[0m");
+                next.insert(0, clear_lines(n));
+
+                os << next << _HIDE << std::flush;
+            }
         }
     };
 

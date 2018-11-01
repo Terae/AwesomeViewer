@@ -57,7 +57,6 @@ namespace AwesomeViewer {
         Inherit = 11
     };
 
-
     template<class X>
     constexpr auto compose_mod(X x) {
         return x;

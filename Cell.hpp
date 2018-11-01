@@ -22,7 +22,7 @@ namespace AwesomeViewer {
         unsigned int _width, _height;
         std::vector<std::string> _data;
 
-        AbstractCell(unsigned int width, unsigned int height/*, std::function<std::string()> generate_data*/) :
+        AbstractCell(unsigned int width, unsigned int height) :
         _width(width), _height(height) {}
 
     public:
@@ -51,6 +51,7 @@ namespace AwesomeViewer {
 
     public:
         StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(width, height), _data_generator(std::move(generator)) {}
+        StringCell(unsigned int width, unsigned int height, std::string str) : StringCell(width, height, [str](){ return str;}) {}
 
         void update() override {
             _data.clear();
@@ -83,6 +84,7 @@ namespace AwesomeViewer {
 
     public:
         MapCell(unsigned int width, unsigned int height, std::function<std::map<std::string, T>()> generator) : AbstractCell(width, height), _data_generator(std::move(generator)) {}
+        MapCell(unsigned int width, unsigned int height, std::map<std::string, T> map) : MapCell(width, height, [map](){ return map; }) {}
 
         void update() override {
             _data.clear();
@@ -103,24 +105,31 @@ namespace AwesomeViewer {
 
             it = generated_map.begin();
             for(unsigned int i = 0; i < _height; ++i) {
+                std::string result;
+                Style style = Style::Default();
+
                 if(it == generated_map.cend()) {
-                    _data.push_back(std::string(max_size + 1, ' ') + "-" + std::string(_width - max_size - 2, ' '));
+                    result = std::string(max_size + 1, ' ') + "-" + std::string(_width - max_size - 2, ' ');
+
+                    style.fg = FontColor::Black;
+                    style.font = Font::Bold;
+                    result.insert(0, style.to_string());
                 } else {
                     std::stringstream ss;
                     ss << std::right << std::setw(max_size) << it->first << " : " << std::left << std::setw(_width - 3 - max_size) << it->second;
-                    std::string result = ss.str().substr(0, _width);
+                    result = ss.str().substr(0, _width);
 
-                    Style style = Style::Default();
-                    style.fg = FontColor::Black;
                     if(result.size() >= max_size + 2) {
                         result.insert(max_size + 2, style.to_string());
                     }
-                    style.fg = FontColor::White;
+
+                    style.fg = FontColor::Black;
+                    style.font = Font::Bold;
                     result.insert(0, style.to_string());
 
-                    _data.push_back(result);
                     ++it;
                 }
+                _data.push_back(result);
             }
         }
     };
