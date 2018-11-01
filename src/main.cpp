@@ -9,7 +9,7 @@
 using namespace AwesomeViewer;
 
 int main() {
-    VirtualTerminal vt(54, 11);
+    VirtualTerminal vt(54, 13);
 
     StringCell c1(20, 4, "Hello communicator!\nI'm an helper text\nAnd I am a very long string");
     vt.add_cell("Communicator", c1);
@@ -26,18 +26,23 @@ int main() {
     StringCell c3(12, 2, "Sarah\n  Connor");
     vt.add_cell("Terminator", c3);
 
-    StringCell c4(50, 1, "I need to print a very long string in this box.");
-    vt.add_cell("Long container", c4);
-
     int timer = 0;
-    StringCell c5(5, 1, [&timer]() {
-        std::string str_timer = std::to_string(timer);
+    StringCell c4(5, 2, [&timer]() {
+        std::string str_timer = std::to_string(timer / 2);
         return std::string(3 - str_timer.size(), ' ') + str_timer + " s";
     });
-    vt.add_cell("Timer", c5);
+    vt.add_cell("Timer", c4);
 
-    for (; timer < 10; ++timer) {
+    StringCell c5(50, 1, "I need to print a very long string in this box.");
+    vt.add_cell("Long container", c5);
+
+    ProgressCell c6(23, 1, [&timer]() -> double {
+        return timer;
+    });
+    vt.add_cell("Progress bar", c6);
+
+    for (; timer <= 100; ++timer) {
         vt.print(std::cout);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

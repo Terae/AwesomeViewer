@@ -50,8 +50,9 @@ namespace AwesomeViewer {
         std::function<std::string()> _data_generator;
 
       public:
-        StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(width, height), _data_generator(std::move(generator)) {}
-        StringCell(unsigned int width, unsigned int height, std::string str) : StringCell(width, height, [str]() {
+        StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : AbstractCell(width,
+                    height), _data_generator(std::move(generator)) {}
+        StringCell(unsigned int width, unsigned int height, const std::string &str) : StringCell(width, height, [str]() {
             return str;
         }) {}
 
@@ -80,12 +81,48 @@ namespace AwesomeViewer {
         }
     };
 
+    class ProgressCell : public AbstractCell {
+        std::function<double()> _percent_generator;
+        bool _print_percent;
+
+      public:
+        ProgressCell(unsigned int width, unsigned int height, std::function<double()> percent_generator,
+                     bool print_percent = true)
+            : AbstractCell(width, height), _percent_generator(std::move(percent_generator)) {
+            _print_percent = print_percent && _width > 7;
+        }
+
+        void update() override {
+            _data.clear();
+            double progress = _percent_generator();
+            progress = std::min(100.0, std::max(0.0, progress));
+            unsigned int progress_width = (_print_percent ? _width - 4 : _width);
+            auto amount = static_cast<unsigned int>(progress * progress_width / 100);
+
+            Style style = Style::Default();
+            style.bg = Color::Green;
+            std::stringstream result;
+            result << style.to_string() << std::string(amount, ' ');
+            style.bg = Color::Transparent;
+            result << style.to_string() << std::string(progress_width - amount, ' ');
+
+            if (_print_percent) {
+                style.fg = FontColor::Black;
+                style.font = Font::Bold;
+                result << style.to_string() << std::right << std::setw(3) << static_cast<int>(progress) << '%';
+            }
+            _data.push_back(result.str());
+        }
+    };
+
     template <typename T>
     class MapCell : public AbstractCell {
         std::function<std::map<std::string, T>()> _data_generator;
 
       public:
-        MapCell(unsigned int width, unsigned int height, std::function<std::map<std::string, T>()> generator) : AbstractCell(width, height), _data_generator(std::move(generator)) {}
+        MapCell(unsigned int width, unsigned int height,
+                std::function<std::map<std::string, T>()> generator) : AbstractCell(width, height),
+            _data_generator(std::move(generator)) {}
         MapCell(unsigned int width, unsigned int height, std::map<std::string, T> map) : MapCell(width, height, [map]() {
             return map;
         }) {}
@@ -120,7 +157,8 @@ namespace AwesomeViewer {
                     result.insert(0, style.to_string());
                 } else {
                     std::stringstream ss;
-                    ss << std::right << std::setw(max_size) << it->first << " : " << std::left << std::setw(_width - 3 - max_size) << it->second;
+                    ss << std::right << std::setw(max_size) << it->first << " : " << std::left << std::setw(
+                           _width - 3 - max_size) << it->second;
                     result = ss.str().substr(0, _width);
 
                     if (result.size() >= max_size + 2) {
