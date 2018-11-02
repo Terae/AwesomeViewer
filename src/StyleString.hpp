@@ -82,6 +82,11 @@ namespace AwesomeViewer {
             return *this;
         }
 
+        StyleString &operator+=(const StyleString &other) {
+            this->insert(other);
+            return *this;
+        }
+
         void insert(std::pair<Style, std::string> p) {
             _data.push_back(std::move(p));
         }
@@ -92,6 +97,12 @@ namespace AwesomeViewer {
 
         void insert(std::string str) {
             _data.emplace_back(Style::Default(), std::move(str));
+        }
+
+        void insert(const StyleString &other) {
+            for (const auto &p : other._data) {
+                _data.push_back(p);
+            }
         }
 
         inline bool empty() const {

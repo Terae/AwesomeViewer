@@ -153,6 +153,22 @@ namespace AwesomeViewer {
     class MapCell : public AbstractCell {
         std::function<std::map<std::string, T>()> _data_generator;
 
+        template<class Q = T>
+        typename std::enable_if<std::is_same<Q, StyleString>::value, StyleString>::type T_to_string(Q x, unsigned int size) {
+            StyleString str = x.substr(0, size);
+            str += std::string(std::max(0, (int)(size - x.size())), ' ');
+            return str;
+        }
+
+        template<class Q = T>
+        typename std::enable_if < !std::is_same<Q, StyleString>::value, StyleString >::type T_to_string(Q x,
+                unsigned int size) {
+            std::stringstream ss;
+            ss << std::left << std::setw(size) << x;
+
+            return StyleString(ss.str());
+        }
+
       public:
         MapCell(unsigned int width, unsigned int height,
                 std::function<std::map<std::string, T>()> generator) : AbstractCell(width, height),
@@ -193,9 +209,7 @@ namespace AwesomeViewer {
                     ss_left << std::right << std::setw(max_size) << it->first << " : ";
                     result.insert(Style(FontColor::Black, Font::Bold), ss_left.str());
 
-                    std::stringstream ss_right;
-                    ss_right << std::left << std::setw(_width - 3 - max_size) << it->second;
-                    result.insert(Style::Default(), ss_right.str());
+                    result += T_to_string(it->second, _width - 3 - max_size);
 
                     ++it;
                 }

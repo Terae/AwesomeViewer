@@ -42,6 +42,9 @@ int main() {
     });
     vt.add_cell("Progress bar", c6);
 
+    MapCell<StyleString> c7(19, 1, {{"test", StyleString(Style(Font::Italic), "It works!")}});
+    vt.add_cell("Map", c7);
+
     for (; timer <= 100; ++timer) {
         vt.print(std::cout);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
