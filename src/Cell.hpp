@@ -196,6 +196,7 @@ namespace AwesomeViewer {
                     max_size = it->first.size();
                 }
             }
+            max_size = std::min(max_size, _width - 3);
 
             it = generated_map.begin();
             for (unsigned int i = 0; i < _height; ++i) {

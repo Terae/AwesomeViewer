@@ -11,9 +11,13 @@
 
 #include <algorithm>
 #include <chrono>
+#include <iostream>
 #include <limits>
 #include <memory>
+#include <sys/ioctl.h>
+#include <stdio.h>
 #include <thread>
+#include <unistd.h>
 
 namespace AwesomeViewer {
 
@@ -90,7 +94,7 @@ namespace AwesomeViewer {
       public:
         VirtualTerminal(unsigned int max_width, unsigned int max_height) : _width(max_width), _height(max_height) {
             for (unsigned int y = 0; y < _height; ++y) {
-                std::vector<std::unique_ptr<AbstractPixel>> v(_width);
+                std::vector<std::unique_ptr<AbstractPixel>> v;
                 for (unsigned int x = 0; x < _width; ++x) {
                     v.emplace_back(nullptr);
                 }
@@ -98,7 +102,7 @@ namespace AwesomeViewer {
             }
         }
 
-        void add_cell(const std::string &name, AbstractCell &cell) {
+        void add_cell(AbstractCell &cell, const std::string &name = "") {
             Coord space = get_free_space(cell);
             if (space == out_of_space) {
                 throw std::runtime_error("No space left.");
@@ -109,21 +113,28 @@ namespace AwesomeViewer {
             unsigned int y = space.y;
             insert_border({x++, y}, TopLeftCorner);
             insert_border({x++, y}, HorizontalBorder);
-            insert_border({x++, y}, EmptyBorder);
 
-            std::string s = name.substr(0, (std::size_t) std::max(static_cast<int>(cell.get_width()) - 2, 0));
-            _pixels[y][x++] = std::make_unique<CellNamePixel>(s);
-            for (unsigned int i = 0; i < s.size() - 1; ++i) {
-                _pixels[y][x++] = std::make_unique<EmptyPixel>();
+            if (name.empty()) {
+                for (unsigned int i = 0; i < cell.get_width() + 1; ++i) {
+                    insert_border({x++, y}, HorizontalBorder);
+                }
+            } else {
+                insert_border({x++, y}, EmptyBorder);
+
+                std::string s = name.substr(0, (std::size_t) std::max(static_cast<int>(cell.get_width()) - 2, 0));
+                _pixels[y][x++] = std::make_unique<CellNamePixel>(s);
+                for (unsigned int i = 0; i < s.size() - 1; ++i) {
+                    _pixels[y][x++] = std::make_unique<EmptyPixel>();
+                }
+
+                insert_border({x++, y}, EmptyBorder);
+
+                for (unsigned int i = 0; i < cell.get_width() - 1 - s.size(); ++i) {
+                    insert_border({x++, y}, HorizontalBorder);
+                }
             }
 
-            insert_border({x++, y}, EmptyBorder);
-
-            for (unsigned int i = 0; i < cell.get_width() - 1 - s.size(); ++i) {
-                insert_border({x++, y}, HorizontalBorder);
-            }
             insert_border({x, y++}, TopRightCorner);
-
 
             // Cell
             for (unsigned int i = 0; i < cell.get_height(); ++i) {
@@ -154,7 +165,22 @@ namespace AwesomeViewer {
             insert_border({x, y}, BottomRightCorner);
         }
 
-        void print(std::ostream &os) {
+        void print() {
+            winsize size{};
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+
+            if (size.ws_col < _width || size.ws_row < _height) {
+                const unsigned int n = std::count(_buffer.cbegin(), _buffer.cend(), '\n');
+                std::string too_small_message;
+                too_small_message.insert(0, "\e[0m");
+                too_small_message.insert(0, clear_lines(n));
+                too_small_message += Style(Font::Bold).to_string();
+                too_small_message += "Your terminal is too small to display the UI.\nPlease resize terminal window to at least " +
+                                     std::to_string(_width) + "x" + std::to_string(_height) + ".";
+                std::cout << too_small_message << std::endl;
+                return;
+            }
+
             std::string next;
 
             // Calculation of the next string
@@ -168,10 +194,12 @@ namespace AwesomeViewer {
                 }
                 next += '\n';
             }
+            // remove the last `\n`
+            next.pop_back();
 
             if (_buffer.empty()) {
                 _buffer = next;
-                os << _buffer << _HIDE << std::flush;
+                std::cout << _buffer << _HIDE << std::flush;
             }
 
             if (_buffer != next) {
@@ -182,7 +210,7 @@ namespace AwesomeViewer {
                 next.insert(0, "\e[0m");
                 next.insert(0, clear_lines(n));
 
-                os << next << _HIDE << std::flush;
+                std::cout << next << _HIDE << std::flush;
             }
         }
     };
