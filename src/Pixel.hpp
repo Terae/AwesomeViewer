@@ -77,6 +77,7 @@ namespace AwesomeViewer {
                 return "┼";
             case CellName:
             case CellValue:
+            default:
                 throw std::invalid_argument("None associated symbol.");
         }
     }
@@ -88,6 +89,7 @@ namespace AwesomeViewer {
 
       public:
         virtual std::string to_string() const = 0;
+        virtual ~AbstractPixel() = default;
 
         PixelType get_type() const {
             return _type;
