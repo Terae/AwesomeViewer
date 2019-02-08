@@ -13,5 +13,5 @@ set(VIEWER_SOURCE
 add_library(AwesomeViewer STATIC ${VIEWER_SOURCE})
 set_target_properties(AwesomeViewer PROPERTIES LINKER_LANGUAGE CXX)
 
-add_executable(main src/main.cpp)
-target_link_libraries(main AwesomeViewer)
+add_executable(AwesomeViewerExample src/main.cpp)
+target_link_libraries(AwesomeViewerExample AwesomeViewer)

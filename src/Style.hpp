@@ -75,50 +75,50 @@ namespace AwesomeViewer {
         return r.empty() ? "" : "\e[" + r + "m";
     }
 
-    FontColor is_style(FontColor x) {
+    constexpr FontColor is_style(FontColor x) {
         return x;
     }
 
-    Color is_style(Color x) {
+    constexpr Color is_style(Color x) {
         return x;
     }
 
-    Font is_style(Font x) {
+    constexpr Font is_style(Font x) {
         return x;
     }
 
-    FontColor to_font_color(FontColor c) {
+    constexpr FontColor to_font_color(FontColor c) {
         return c;
     }
 
-    Color to_color(Color c) {
+    constexpr Color to_color(Color c) {
         return c;
     }
 
-    Font to_font(Font f) {
+    constexpr Font to_font(Font f) {
         return f;
     }
 
-    FontColor to_font_color(...) {
+    constexpr FontColor to_font_color(...) {
         return FontColor::None;
     }
 
-    Color to_color(...) {
+    constexpr Color to_color(...) {
         return Color::None;
     }
 
-    Font to_font(...) {
+    constexpr Font to_font(...) {
         return Font::None;
     }
 
     template<class...Xs>
     constexpr FontColor get_font_color(Xs...xs) {
-        return (FontColor) std::max({0, (int) to_font_color(xs)...});
+        return static_cast<FontColor>(std::max({0, static_cast<int>(to_font_color(xs))...}));
     }
 
     template<class...Xs>
     constexpr Color get_color(Xs...xs) {
-        return (Color) std::max({0, (int) to_color(xs)...});
+        return static_cast<Color>(std::max({0, static_cast<int>(to_color(xs))...}));
     }
 
     constexpr Font get_font_style(Font f = Font::None) {
@@ -128,12 +128,12 @@ namespace AwesomeViewer {
 
     template<class X, class...Xs>
     constexpr Font get_font_style(X x, Xs...xs) {
-        return Font(((int) get_font_style(to_font(x))) | ((int) get_font_style(to_font(xs)...)));
+        return Font((static_cast<int>(get_font_style(to_font(x)))) | (static_cast<int>(get_font_style(to_font(xs)...))));
     }
 
 
-    bool has(Font x, Font y) {
-        return (bool) (((int) x) & ((int) y));
+    constexpr bool has(Font x, Font y) {
+        return static_cast<bool>((static_cast<int>(x) & static_cast<int>(y)));
     }
 
     struct Style {
@@ -155,45 +155,44 @@ namespace AwesomeViewer {
             return {Font::Default};
         }
 
-        string default_mod() const {
+        inline string default_mod() const {
             return has(font, Font::Default) ? "0" : "";
         }
 
-
-        string bold_mod() const {
+        inline string bold_mod() const {
             return has(font, Font::Bold) ? "1" : "";
         }
 
-        string underline_mod() const {
+        inline string underline_mod() const {
             return has(font, Font::Underline) ? "4" : "";
         }
 
-        string faint_mod() const {
+        inline string faint_mod() const {
             return has(font, Font::Faint) ? "2" : "";
         }
 
-        string italic_mod() const {
+        inline string italic_mod() const {
             return has(font, Font::Italic) ? "3" : "";
         }
 
-        string hidden_mod() const {
+        inline string hidden_mod() const {
             return has(font, Font::Hidden) ? "8" : "";
         }
 
-        string crossed_mod() const {
+        inline string crossed_mod() const {
             return has(font, Font::Crossed) ? "9" : "";
         }
 
 
-        string bg_mod() const {
-            return ((int) bg < 11) ? std::to_string(40 + (int) bg - 1) : "";
+        inline string bg_mod() const {
+            return (static_cast<int>(bg) < 11) ? std::to_string(40 + static_cast<int>(bg) - 1) : "";
         }
 
-        string fg_mod() const {
-            return ((int) fg < 11) ? std::to_string(30 + (int) fg - 1) : "";
+        inline string fg_mod() const {
+            return (static_cast<int>(fg) < 11) ? std::to_string(30 + static_cast<int>(fg) - 1) : "";
         }
 
-        std::string to_string() const {
+        inline std::string to_string() const {
             return compute_mod(
                        default_mod(),
                        bold_mod(),
@@ -209,19 +208,19 @@ namespace AwesomeViewer {
     };
 
 
-    Style diff(Style const &a, Style const &b = Style::None()) {
+    constexpr Style diff(Style const &a, Style const &b = Style::None()) {
         bool keepBG = (a.bg == b.bg);
         bool keepFG = (a.fg == b.fg);
         bool keepFont = (a.font == b.font);
 
-        int l = (int) a.font;
-        int r = (int) b.font;
+        int l = static_cast<int>(a.font);
+        int r = static_cast<int>(b.font);
         bool reset = static_cast<bool>(l & ~r);
 
         return Style{
             (keepBG and !reset) ? Color::Inherit : b.bg,
             (keepFG and !reset) ? FontColor::Inherit : b.fg,
-            (keepFont and !reset) ? Font::Inherit : (Font) ((r & ((l & r) ^ r)) | reset)
+            (keepFont and !reset) ? Font::Inherit : static_cast<Font>((r & ((l & r) ^ r)) | reset)
         };
     }
 }

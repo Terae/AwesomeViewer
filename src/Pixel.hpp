@@ -31,7 +31,7 @@ namespace AwesomeViewer {
         CellValue = 0b100000, // begin of a cell line
     };
 
-    PixelType operator+(const PixelType &p1, const PixelType &p2) {
+    constexpr PixelType operator+(const PixelType &p1, const PixelType &p2) {
         if (p1 == CellValue || p1 == CellName || p1 == EmptyBorder) {
             return p1;
         }
@@ -41,7 +41,7 @@ namespace AwesomeViewer {
         return static_cast<PixelType>(p1 | p2);
     }
 
-    std::string get_symbol_of(PixelType type) {
+    inline std::string get_symbol_of(PixelType type) {
         switch (type) {
             case EmptyBorder:
                 return " ";
@@ -91,11 +91,11 @@ namespace AwesomeViewer {
         virtual std::string to_string() const = 0;
         virtual ~AbstractPixel() = default;
 
-        PixelType get_type() const {
+        constexpr PixelType get_type() const {
             return _type;
         }
 
-        bool can_be_overwritten() const {
+        constexpr bool can_be_overwritten() const {
             return _type != EmptyBorder && _type != CellValue && _type != CellName;
         }
     };

@@ -121,7 +121,7 @@ namespace AwesomeViewer {
             } else {
                 insert_border({x++, y}, EmptyBorder);
 
-                std::string s = name.substr(0, (std::size_t) std::max(static_cast<int>(cell.get_width()) - 2, 0));
+                std::string s = name.substr(0, static_cast<std::size_t>(std::max(static_cast<int>(cell.get_width()) - 2, 0)));
                 _pixels[y][x++] = std::make_unique<CellNamePixel>(s);
                 for (unsigned int i = 0; i < s.size() - 1; ++i) {
                     _pixels[y][x++] = std::make_unique<EmptyPixel>();
@@ -170,10 +170,10 @@ namespace AwesomeViewer {
             ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 
             if (size.ws_col < _width || size.ws_row < _height) {
-                const unsigned int n = std::count(_buffer.cbegin(), _buffer.cend(), '\n');
+                const auto n = std::count(_buffer.cbegin(), _buffer.cend(), '\n');
                 std::string too_small_message;
                 too_small_message.insert(0, "\e[0m");
-                too_small_message.insert(0, clear_lines(n));
+                too_small_message.insert(0, clear_lines(2));
                 too_small_message += Style(Font::Bold).to_string();
                 too_small_message += "Your terminal is too small to display the UI.\nPlease resize terminal window to at least " +
                                      std::to_string(_width) + "x" + std::to_string(_height) + ".";

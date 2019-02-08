@@ -28,7 +28,7 @@ namespace AwesomeViewer {
         explicit StyleString(const std::string &str) : StyleString(Style::Default(), str) {}
         StyleString() = default;
 
-        std::string to_string() const {
+        inline std::string to_string() const {
             std::string result;
             for (const auto &p : _data) {
                 result += p.first.to_string() + p.second;
@@ -36,7 +36,7 @@ namespace AwesomeViewer {
             return result;
         }
 
-        std::size_t size() const {
+        inline std::size_t size() const {
             std::size_t size = 0;
             std::for_each(_data.cbegin(), _data.cend(), [&size](const auto & p) {
                 size += p.second.size();
@@ -72,34 +72,34 @@ namespace AwesomeViewer {
             return std::move(copy);
         }
 
-        StyleString &operator+=(const std::string &str) {
+        inline StyleString &operator+=(const std::string &str) {
             this->insert(str);
             return *this;
         }
 
-        StyleString &operator+=(std::pair<Style, std::string> p) {
+        inline StyleString &operator+=(std::pair<Style, std::string> p) {
             this->insert(std::move(p));
             return *this;
         }
 
-        StyleString &operator+=(const StyleString &other) {
+        inline StyleString &operator+=(const StyleString &other) {
             this->insert(other);
             return *this;
         }
 
-        void insert(std::pair<Style, std::string> p) {
+        inline void insert(std::pair<Style, std::string> p) {
             _data.push_back(std::move(p));
         }
 
-        void insert(Style style, std::string str) {
+        inline void insert(Style style, std::string str) {
             _data.emplace_back(style, std::move(str));
         }
 
-        void insert(std::string str) {
+        inline void insert(std::string str) {
             _data.emplace_back(Style::Default(), std::move(str));
         }
 
-        void insert(const StyleString &other) {
+        inline void insert(const StyleString &other) {
             for (const auto &p : other._data) {
                 _data.push_back(p);
             }
@@ -113,7 +113,7 @@ namespace AwesomeViewer {
             _data.clear();
         }
 
-        std::size_t find_first_of(char c) const {
+        inline std::size_t find_first_of(char c) const {
             std::size_t position = 0;
             bool found = false;
             for (const auto &p : _data) {
@@ -135,7 +135,7 @@ namespace AwesomeViewer {
         }
     };
 
-    std::ostream &operator<<(std::ostream &os, const StyleString &str) {
+    inline std::ostream &operator<<(std::ostream &os, const StyleString &str) {
         return os << str.to_string();
     }
 }

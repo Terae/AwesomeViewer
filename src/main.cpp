@@ -9,7 +9,7 @@
 using namespace AwesomeViewer;
 
 int main() {
-    VirtualTerminal vt(56, 13);
+    VirtualTerminal vt(56, 15);
 
     StringCell c1(22, 4, "Hello communicator!\nI'm an helper text\nAnd I am a very long string");
     vt.add_cell(c1, "Communicator");
@@ -37,16 +37,19 @@ int main() {
     StringCell c5(50, 1, {{Style::Default(), "I need to print a "}, {Style(Font::Italic, Font::Bold, FontColor::Blue), "very long"}, {Style::Default(), " string in this box"}});
     vt.add_cell(c5, "Long container");
 
-    ProgressCell c6(23, 1, [&timer]() -> double {
+    //StringCell c6(86);
+    //vt.add_cell(c6, "String");
+
+    ProgressCell c7(23, 1, [&timer]() -> double {
         return timer;
     });
-    vt.add_cell(c6, "Progress bar");
+    vt.add_cell(c7, "Progress bar");
 
-    MapCell<StyleString> c7(19, 1, {{"test", StyleString(Style(Font::Italic), "It works!")}});
-    vt.add_cell(c7);
+    MapCell<StyleString> c8(19, 1, {{"test", StyleString(Style(Font::Italic), "It works!")}});
+    vt.add_cell(c8);
 
     for (; timer <= 100; ++timer) {
         vt.print();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }

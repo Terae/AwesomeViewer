@@ -27,13 +27,15 @@ namespace AwesomeViewer {
             _width(width), _height(height) {}
 
       public:
+        virtual ~AbstractCell() = default;
+
         virtual void update() = 0;
 
-        unsigned int get_height() const {
+        constexpr unsigned int get_height() const {
             return _height;
         }
 
-        unsigned int get_width() const {
+        constexpr unsigned int get_width() const {
             return _width;
         }
 
@@ -48,8 +50,18 @@ namespace AwesomeViewer {
         }
     };
 
-    class StringCell : public AbstractCell {
+    class StringCell final : public AbstractCell {
         std::function<StyleString()> _data_generator;
+
+        std::vector<std::string> split(const std::string &s, char delimiter) {
+            std::vector<std::string> tokens;
+            std::string token;
+            std::istringstream tokenStream(s);
+            while (std::getline(tokenStream, token, delimiter)) {
+                tokens.push_back(token);
+            }
+            return tokens;
+        }
 
       public:
         StringCell(unsigned int width, unsigned int height, std::function<std::string()> generator) : StringCell(
@@ -74,6 +86,31 @@ namespace AwesomeViewer {
                        [str]() {
             return str;
         }) {}
+
+        template <typename T>
+        StringCell(const T &value) :
+            StringCell([value, this]() {
+            std::stringstream ss;
+            ss << value;
+            auto lines = split(ss.str(), '\n');
+            unsigned int width = 0;
+            for (std::string str : lines) {
+                width = std::max(width, static_cast<unsigned int>(str.size()));
+            }
+            return width;
+        }(), [value, this]() {
+            std::stringstream ss;
+            ss << value;
+            auto lines = split(ss.str(), '\n');
+            unsigned int height = static_cast<unsigned int>(lines.size());
+            return height;
+        }(), [value]() {
+            std::stringstream ss;
+            ss << value;
+            return ss.str();
+        }) {}
+
+        ~StringCell() override = default;
 
         void update() override {
             _data.clear();
@@ -100,7 +137,7 @@ namespace AwesomeViewer {
         }
     };
 
-    class ProgressCell : public AbstractCell {
+    class ProgressCell final : public AbstractCell {
         double _min;
         double _max;
         std::function<double()> _percent_generator;
@@ -122,6 +159,8 @@ namespace AwesomeViewer {
         ProgressCell(unsigned int width, unsigned int height, std::function<double()> percent_generator,
                      bool print_percent = true) : ProgressCell(width, height, 0.0, 100.0, std::move(percent_generator),
                                  print_percent) {}
+
+        ~ProgressCell() override = default;
 
         void update() override {
             _data.clear();
@@ -150,13 +189,13 @@ namespace AwesomeViewer {
     };
 
     template<typename T>
-    class MapCell : public AbstractCell {
+    class MapCell final : public AbstractCell {
         std::function<std::map<std::string, T>()> _data_generator;
 
         template<class Q = T>
         typename std::enable_if<std::is_same<Q, StyleString>::value, StyleString>::type T_to_string(Q x, unsigned int size) {
             StyleString str = x.substr(0, size);
-            str += std::string(std::max(0, (int)(size - x.size())), ' ');
+            str += std::string(std::max(0, static_cast<int>(size - x.size())), ' ');
             return str;
         }
 
@@ -179,6 +218,8 @@ namespace AwesomeViewer {
                     [map]() {
             return map;
         }) {}
+
+        ~MapCell() override = default;
 
         void update() override {
             _data.clear();
